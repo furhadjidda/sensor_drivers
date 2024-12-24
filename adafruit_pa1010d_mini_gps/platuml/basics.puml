@@ -1,0 +1,17 @@
+@startuml
+actor User
+participant "GNSS Satellite" as Satellite
+participant "GNSS Receiver" as Receiver
+participant "NMEA Parser" as Parser
+participant "Application" as App
+
+User -> Receiver : Power on GNSS Receiver
+Receiver -> Satellite : Request GNSS Signal
+Satellite -> Receiver : Send GNSS Signal
+Receiver -> Receiver : Decode GNSS Signal
+Receiver -> Receiver : Format NMEA Message
+Receiver -> Parser : Send NMEA Message
+Parser -> Parser : Parse NMEA Message
+Parser -> App : Provide Parsed Data
+App -> User : Display Time and Position
+@enduml

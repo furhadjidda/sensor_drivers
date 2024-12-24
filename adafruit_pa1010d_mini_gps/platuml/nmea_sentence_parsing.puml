@@ -1,0 +1,13 @@
+@startuml
+participant "NMEA Parser" as Parser
+participant "Sentence Splitter" as Splitter
+participant "Field Validator" as FieldValidator
+participant "Data Extractor" as Extractor
+
+Parser -> Splitter : Split Sentence into Fields
+Splitter -> Parser : Return Fields
+Parser -> FieldValidator : Validate Fields
+FieldValidator -> Parser : Return Validation Result
+Parser -> Extractor : Extract Useful Data
+Extractor -> Parser : Return Extracted Data
+@enduml

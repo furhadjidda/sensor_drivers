@@ -1,0 +1,76 @@
+@startuml
+
+class Adafruit_GPS {
+    - uint32_t mI2cAddress
+    - i2c_inst_t *mI2c
+    - char mLine1[MAXLINELENGTH]
+    - char mLine2[MAXLINELENGTH]
+    - char *mCurrentLine
+    - char *mLastline
+    - bool mRecvdflag
+    - bool mPaused
+    - bool mNoComms
+    - int mBuffIdx
+    - int mBuffMax
+    - char mI2cBuffer[GPS_MAX_I2C_TRANSFER]
+    - char mLastChar
+    - uint32_t mLastFix
+    - uint32_t mLastTime
+    - uint32_t mLastDate
+    - bool mInStandbyMode
+    - uint32_t mSentTime
+    - uint32_t mRecvdTime
+
+    + Adafruit_GPS(i2c_inst_t *aI2cInstance)
+    + ~Adafruit_GPS()
+    + bool Init(uint32_t aI2cAddress)
+    + char ReadData()
+    + void SendCommand(const uint8_t *str, uint8_t len)
+    + bool NewNMEAreceived()
+    + void Pause(bool p)
+    + char* LastNMEA()
+    + bool WaitForSentence(const char *wait4me, uint8_t max, bool usingInterrupts = false)
+    + bool Standby()
+    + bool Wakeup()
+    + nmea_float_t SecondsSinceFix()
+    + nmea_float_t SecondsSinceTime()
+    + nmea_float_t SecondsSinceDate()
+    + void ResetSentTime()
+}
+
+class LOCUS_Logger {
+
+    - nmea_index_t mLOCUS_serial
+    - nmea_index_t mLOCUS_type
+    - nmea_index_t mLOCUS_mode
+    - nmea_index_t mLOCUS_config
+    - nmea_index_t mLOCUS_interval
+    - nmea_index_t mLOCUS_distance
+    - nmea_index_t mLOCUS_speed
+    - nmea_index_t mLOCUS_status
+    - nmea_index_t mLOCUS_records
+    - nmea_index_t mLOCUS_percent
+    + bool LOCUS_StartLogger()
+    + bool LOCUS_StopLogger()
+    + bool LOCUS_ReadStatus()
+}
+
+class Utils {
+    static bool StrStartsWith(const char *str, const char *prefix)
+}
+
+class NMEA_Parser {
+    - void data_init()
+    - void removeHistory(nmea_index_t index)
+}
+
+class DataBus{
+
+}
+
+Adafruit_GPS --> DataBus : uses
+Adafruit_GPS ..> Utils : uses
+Adafruit_GPS ..> NMEA_Parser: uses
+Adafruit_GPS ..> LOCUS_Logger: uses
+
+@enduml

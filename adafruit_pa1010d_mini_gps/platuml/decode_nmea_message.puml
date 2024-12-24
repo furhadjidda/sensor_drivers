@@ -1,0 +1,24 @@
+@startuml
+actor User
+participant "GNSS Receiver" as Receiver
+participant "NMEA Parser" as Parser
+participant "Checksum Validator" as Validator
+participant "Data Extractor" as Extractor
+participant "Application" as App
+
+User -> Receiver : Power on GNSS Receiver
+Receiver -> Parser : Send NMEA Message
+Parser -> Validator : Validate Checksum
+Validator -> Validator : Checksum OK?
+Validator -> Parser : Yes
+Parser -> Parser : Parse NMEA Sentence
+Parser -> Extractor : Extract Data
+Extractor -> App : Provide Parsed Data
+App -> User : Display Time and Position
+
+alt Checksum Not OK
+  Validator -> Parser : No
+  Parser -> Receiver : Request New Message
+end
+
+@enduml

@@ -1,0 +1,44 @@
+@startuml
+
+class GNSSReceiver {
+    sendNMEAMessage(): String
+}
+
+class NMEAParser {
+    parseNMEAMessage(message: String): ParsedData
+    checksumValidator: ChecksumValidator
+    sentenceSplitter: SentenceSplitter
+    fieldValidator: FieldValidator
+    dataExtractor: DataExtractor
+}
+
+class ChecksumValidator {
+    validateChecksum(message: String): Boolean
+}
+
+class SentenceSplitter {
+    splitSentence(message: String): List<String>
+}
+
+class FieldValidator {
+    validateFields(fields: List<String>): Boolean
+}
+
+class DataExtractor {
+    extractData(fields: List<String>): ParsedData
+}
+
+class ParsedData {
+    time: String
+    position: String
+    toString(): String
+}
+
+GNSSReceiver --> NMEAParser : sends NMEA message to
+NMEAParser --> ChecksumValidator : uses
+NMEAParser --> SentenceSplitter : uses
+NMEAParser --> FieldValidator : uses
+NMEAParser --> DataExtractor : uses
+NMEAParser --> ParsedData : returns
+
+@enduml
