@@ -33,4 +33,4 @@ target_link_libraries(pca9685 PUBLIC
     hardware_i2c
 )
 
-add_subdirectory(tests)
+add_subdirectory("${PCA9685}/tests")
