@@ -10,10 +10,6 @@ set(CMAKE_CXX_STANDARD 17)
 # Directory names and path
 set(PCA9685 "${CMAKE_CURRENT_SOURCE_DIR}")
 
-# Define compile-time constants
-add_compile_definitions(APP_NAME="${PROJECT_NAME}")
-
-
 add_executable(pca9685_test
     pca9685_test.cpp
 )
@@ -27,12 +23,6 @@ target_link_libraries(pca9685_test PUBLIC
 target_include_directories(pca9685_test PUBLIC
     ${PCA9685}
 )
-
-# Define compile-time constants for the test application
-target_compile_definitions(pca9685_test PUBLIC
-    APP_NAME="${PROJECT_NAME}"
-)
-
 
 # Additional compiler flags
 SET(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -ffunction-sections -fdata-sections")

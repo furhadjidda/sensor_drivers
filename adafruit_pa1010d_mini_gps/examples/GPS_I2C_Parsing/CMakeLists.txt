@@ -15,13 +15,6 @@ add_executable(${PROJECT_NAME}
     GPS_I2C_Parsing.cpp
 )
 
-# Define compile-time constants
-target_compile_definitions(${PROJECT_NAME} PUBLIC
-    APP_NAME="${PROJECT_NAME}"
-    APP_VERSION="${PROJECT_VERSION}"
-    BUILD_NUM=${BUILD_NUMBER}
-)
-
 # Link to built libraries
 target_link_libraries(${PROJECT_NAME} PUBLIC
     pico_stdlib
