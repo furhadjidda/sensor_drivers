@@ -196,7 +196,8 @@ typedef enum {
     VECTOR_GYROSCOPE = BNO055_GYRO_DATA_X_LSB_ADDR,
     VECTOR_EULER = BNO055_EULER_H_LSB_ADDR,
     VECTOR_LINEARACCEL = BNO055_LINEAR_ACCEL_DATA_X_LSB_ADDR,
-    VECTOR_GRAVITY = BNO055_GRAVITY_DATA_X_LSB_ADDR
+    VECTOR_GRAVITY = BNO055_GRAVITY_DATA_X_LSB_ADDR,
+    VECTOR_QUAT = BNO055_QUATERNION_DATA_W_LSB_ADDR
 } vector_type_t;
 
 /** BNO055 Address A **/
@@ -244,6 +245,13 @@ typedef enum {
     OPERATION_MODE_NDOF_FMC_OFF = 0X0B,
     OPERATION_MODE_NDOF = 0X0C
 } bno055_opmode_t;
+
+typedef struct {
+    double w; // Quaternion W component
+    double x; // Quaternion X component
+    double y; // Quaternion Y component
+    double z; // Quaternion Z component
+} quaternion_data;
 
 using EulerData = uint8_t[6];
 

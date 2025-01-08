@@ -19,6 +19,8 @@ class Bno055 {
     bool is_fully_calibrated();
     void get_calibration(uint8_t *sys, uint8_t *gyro, uint8_t *accel, uint8_t *mag);
     void check_firmware_version();
+    void set_ext_crystal_use(bool usextal);
+    void get_quaternion(quaternion_data &quaternion_data);
 
   private:
     void bno055_write_register(uint8_t reg, uint8_t value);

@@ -95,6 +95,27 @@ void Bno055::get_vector(vector_type_t vector_type, double data[3]) {
     data[2] = ((double)z) / scale;
 }
 
+void Bno055::get_quaternion(quaternion_data &quaternion_data) {
+    uint8_t buffer[8] = {0}; // Quaternion data is 8 bytes (4 components, 2 bytes each)
+
+    // Read 8 bytes starting at the quaternion data register
+    bno055_read_bytes(BNO055_QUATERNION_DATA_W_LSB_ADDR, buffer, 8);
+
+    // Convert the raw data into signed integers
+    int16_t w = ((int16_t)buffer[0]) | (((int16_t)buffer[1]) << 8);
+    int16_t x = ((int16_t)buffer[2]) | (((int16_t)buffer[3]) << 8);
+    int16_t y = ((int16_t)buffer[4]) | (((int16_t)buffer[5]) << 8);
+    int16_t z = ((int16_t)buffer[6]) | (((int16_t)buffer[7]) << 8);
+
+    // Scale the values to the range specified in the datasheet
+    const double scale = 1.0 / 16384.0;
+
+    quaternion_data.w = w * scale;
+    quaternion_data.x = x * scale;
+    quaternion_data.y = y * scale;
+    quaternion_data.z = z * scale;
+}
+
 void Bno055::get_system_status(uint8_t *system_status, uint8_t *self_test_result, uint8_t *system_error) {
     // Configure BNO055
     bno055_write_register(BNO055_OPR_MODE_ADDR, OPERATION_MODE_CONFIG);
@@ -197,6 +218,22 @@ bool Bno055::is_fully_calibrated() {
     default:
         return (system == 3 && gyro == 3 && accel == 3 && mag == 3);
     }
+}
+
+void Bno055::set_ext_crystal_use(bool usextal) {
+    /* Switch to config mode (just in case since this is the default) */
+    bno055_write_register(BNO055_OPR_MODE_ADDR, OPERATION_MODE_CONFIG);
+    sleep_ms(25);
+    bno055_write_register(BNO055_PAGE_ID_ADDR, 0);
+    if (usextal) {
+        bno055_write_register(BNO055_SYS_TRIGGER_ADDR, 0x80);
+    } else {
+        bno055_write_register(BNO055_SYS_TRIGGER_ADDR, 0x00);
+    }
+    sleep_ms(10);
+    /* Set the requested operating mode (see section 3.3) */
+    bno055_write_register(BNO055_OPR_MODE_ADDR, OPERATION_MODE_NDOF);
+    sleep_ms(20);
 }
 
 void Bno055::bno055_write_register(uint8_t reg, uint8_t value) {
