@@ -20,7 +20,7 @@
 </table>
 
 ## Description
-The purpose of this project is to underlearn about different sensors used in robotics.
+The purpose of this project is to learn about different sensors used in robotics.
 
 ## Build and Launch
 <div style="border: 2px solid orange ; padding: 10px; color: orange; font-weight: bold;">
