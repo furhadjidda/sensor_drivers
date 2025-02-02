@@ -166,6 +166,23 @@ void SSD1306Oled::ClearAll(void) {
 }
 
 // returns value of a pixel
+uint8_t SSD1306Oled::GetPixel(int16_t X, int16_t Y) {
+    if (X < 0 || X >= width_ || Y < 0 || Y >= height_) {
+        // outside screen area
+        return 0;
+    }
+
+    uint8_t page = Y / 8;
+    uint8_t bit = 1 << (Y % 8);
+    uint8_t *ptr = display_buffer_ + X * 8 + page + 1;  // +1 to skip the initial command byte
+
+    uint8_t current_byte = *ptr;
+    uint8_t current_bit = (current_byte >> (Y % 8)) & 0x01;
+
+    return current_bit;
+}
+
+// returns value of a pixel
 /**
  * @brief Get the value of a pixel at the specified coordinates.
  *
@@ -177,7 +194,7 @@ void SSD1306Oled::ClearAll(void) {
  * @param Y The y-coordinate of the pixel.
  * @return uint8_t The value of the pixel (1 if the pixel is set, 0 if it is not).
  */
-* / uint8_t SSD1306Oled::SetPixel(int16_t X, int16_t Y, uint8_t V) {
+uint8_t SSD1306Oled::SetPixel(int16_t X, int16_t Y, uint8_t V) {
     if (X < 0 || X > width_ || Y < 0 || Y >= height_ || X < clip_rect_.x || X > (clip_rect_.x + clip_rect_.w) ||
         Y < clip_rect_.y || Y > (clip_rect_.y + clip_rect_.h)) {
         // outside screen area
