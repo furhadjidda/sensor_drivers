@@ -35,8 +35,8 @@ target_link_libraries(oled_1306_example PUBLIC
 )
 
 # Additional compiler flags
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Wextra -mcpu=cortex-m0 -mthumb")
-set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wall -Wextra -mcpu=cortex-m0 -mthumb")
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Wextra ")
+set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wall -Wextra ")
 
 # Enable/disable STDIO via USB and UART for the test application
 pico_enable_stdio_usb(oled_1306_example 1)
