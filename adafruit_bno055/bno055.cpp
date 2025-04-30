@@ -10,7 +10,7 @@ namespace bno055_sensor {
 
 bool Bno055::initialization() {
     // Initialize I2C bus
-    i2c_init(I2C_PORT, 100 * 1000); // 100 kHz I2C speed
+    i2c_init(I2C_PORT, 100 * 1000);  // 100 kHz I2C speed
     gpio_set_function(SDA_PIN, GPIO_FUNC_I2C);
     gpio_set_function(SCL_PIN, GPIO_FUNC_I2C);
     gpio_pull_up(SDA_PIN);
@@ -22,19 +22,19 @@ bool Bno055::initialization() {
     uint8_t chip_id = bno055_read_register(BNO055_CHIP_ID_ADDR);
     if (chip_id != BNO055_ID) {
         printf("BNO055 not detected! Chip ID: 0x%02X\n", chip_id);
-        return false; // Initialization failed
+        return false;  // Initialization failed
     }
     printf("BNO055 detected! Chip ID: 0x%02X\n", chip_id);
 
     // Perform a soft reset
     bno055_write_register(BNO055_SYS_TRIGGER_ADDR, 0x20);
-    sleep_ms(650); // Wait for the reset to complete
+    sleep_ms(650);  // Wait for the reset to complete
 
     // Verify chip ID again after reset
     chip_id = bno055_read_register(BNO055_CHIP_ID_ADDR);
     if (chip_id != BNO055_ID) {
         printf("BNO055 not responding after reset! Chip ID: 0x%02X\n", chip_id);
-        return false; // Initialization failed
+        return false;  // Initialization failed
     }
 
     // Set the operating mode to CONFIG_MODE for initial setup
@@ -51,7 +51,7 @@ bool Bno055::initialization() {
     sleep_ms(30);
 
     printf("BNO055 initialization complete.\n");
-    return true; // Initialization successful
+    return true;  // Initialization successful
 }
 
 uint8_t Bno055::get_temp() { return bno055_read_register(BNO055_TEMP_ADDR); }
@@ -59,7 +59,6 @@ uint8_t Bno055::get_temp() { return bno055_read_register(BNO055_TEMP_ADDR); }
 void Bno055::get_euler_angles(EulerData &euler_data) { bno055_read_bytes(BNO055_EULER_H_LSB_ADDR, euler_data, 6); }
 
 void Bno055::get_vector(vector_type_t vector_type, double data[3]) {
-
     uint8_t buffer[6] = {0};
 
     int16_t x, y, z;
@@ -78,16 +77,16 @@ void Bno055::get_vector(vector_type_t vector_type, double data[3]) {
      */
     double scale = 1.0;
     switch (vector_type) {
-    case VECTOR_MAGNETOMETER:
-    case VECTOR_GYROSCOPE:
-    case VECTOR_EULER:
-        scale = 16.0;
-        break;
-    case VECTOR_ACCELEROMETER:
-    case VECTOR_GRAVITY:
-    case VECTOR_LINEARACCEL:
-        scale = 100.0;
-        break;
+        case VECTOR_MAGNETOMETER:
+        case VECTOR_GYROSCOPE:
+        case VECTOR_EULER:
+            scale = 16.0;
+            break;
+        case VECTOR_ACCELEROMETER:
+        case VECTOR_GRAVITY:
+        case VECTOR_LINEARACCEL:
+            scale = 100.0;
+            break;
     }
 
     data[0] = ((double)x) / scale;
@@ -96,7 +95,7 @@ void Bno055::get_vector(vector_type_t vector_type, double data[3]) {
 }
 
 void Bno055::get_quaternion(quaternion_data &quaternion_data) {
-    uint8_t buffer[8] = {0}; // Quaternion data is 8 bytes (4 components, 2 bytes each)
+    uint8_t buffer[8] = {0};  // Quaternion data is 8 bytes (4 components, 2 bytes each)
 
     // Read 8 bytes starting at the quaternion data register
     bno055_read_bytes(BNO055_QUATERNION_DATA_W_LSB_ADDR, buffer, 8);
@@ -133,8 +132,7 @@ void Bno055::get_system_status(uint8_t *system_status, uint8_t *self_test_result
        6 = System running without fusion algorithms
      */
 
-    if (system_status != 0)
-        *system_status = bno055_read_register(BNO055_SYS_STAT_ADDR);
+    if (system_status != 0) *system_status = bno055_read_register(BNO055_SYS_STAT_ADDR);
 
     /* Self Test Results
        1 = test passed, 0 = test failed
@@ -147,8 +145,7 @@ void Bno055::get_system_status(uint8_t *system_status, uint8_t *self_test_result
        0x0F = all good!
      */
 
-    if (self_test_result != 0)
-        *self_test_result = bno055_read_register(BNO055_SELFTEST_RESULT_ADDR);
+    if (self_test_result != 0) *self_test_result = bno055_read_register(BNO055_SELFTEST_RESULT_ADDR);
 
     /* System Error (see section 4.3.59)
        0 = No error
@@ -164,8 +161,7 @@ void Bno055::get_system_status(uint8_t *system_status, uint8_t *self_test_result
        A = Sensor configuration error
      */
 
-    if (system_error != 0)
-        *system_error = bno055_read_register(BNO055_SYS_ERR_ADDR);
+    if (system_error != 0) *system_error = bno055_read_register(BNO055_SYS_ERR_ADDR);
 
     sleep_ms(200);
 
@@ -200,23 +196,23 @@ bool Bno055::is_fully_calibrated() {
     get_calibration(&system, &gyro, &accel, &mag);
     printf("system: %x gyro %x accel %x mag %x\n", system, gyro, accel, mag);
     switch (mMode) {
-    case OPERATION_MODE_ACCONLY:
-        return (accel == 3);
-    case OPERATION_MODE_MAGONLY:
-        return (mag == 3);
-    case OPERATION_MODE_GYRONLY:
-    case OPERATION_MODE_M4G: /* No magnetometer calibration required. */
-        return (gyro == 3);
-    case OPERATION_MODE_ACCMAG:
-    case OPERATION_MODE_COMPASS:
-        return (accel == 3 && mag == 3);
-    case OPERATION_MODE_ACCGYRO:
-    case OPERATION_MODE_IMUPLUS:
-        return (accel == 3 && gyro == 3);
-    case OPERATION_MODE_MAGGYRO:
-        return (mag == 3 && gyro == 3);
-    default:
-        return (system == 3 && gyro == 3 && accel == 3 && mag == 3);
+        case OPERATION_MODE_ACCONLY:
+            return (accel == 3);
+        case OPERATION_MODE_MAGONLY:
+            return (mag == 3);
+        case OPERATION_MODE_GYRONLY:
+        case OPERATION_MODE_M4G: /* No magnetometer calibration required. */
+            return (gyro == 3);
+        case OPERATION_MODE_ACCMAG:
+        case OPERATION_MODE_COMPASS:
+            return (accel == 3 && mag == 3);
+        case OPERATION_MODE_ACCGYRO:
+        case OPERATION_MODE_IMUPLUS:
+            return (accel == 3 && gyro == 3);
+        case OPERATION_MODE_MAGGYRO:
+            return (mag == 3 && gyro == 3);
+        default:
+            return (system == 3 && gyro == 3 && accel == 3 && mag == 3);
     }
 }
 
@@ -251,4 +247,28 @@ void Bno055::bno055_read_bytes(uint8_t reg, uint8_t *buffer, size_t length) {
     i2c_read_blocking(I2C_PORT, BNO055_ADDRESS_A, buffer, length, false);
 }
 
-} // namespace bno055_sensor
+void Bno055::get_calibration_data(CalibrationData &calibration_data) {
+    bno055_write_register(BNO055_OPR_MODE_ADDR, OPERATION_MODE_CONFIG);
+    sleep_ms(25);
+
+    bno055_read_bytes(0x55, calibration_data, CALIBRATION_DATA_SIZE);
+
+    bno055_write_register(BNO055_OPR_MODE_ADDR, OPERATION_MODE_NDOF);
+    sleep_ms(20);
+}
+
+void Bno055::set_calibration_data(const CalibrationData &calibration_data) {
+    // Write the calibration data to the BNO055 sensor
+    bno055_write_register(BNO055_OPR_MODE_ADDR, OPERATION_MODE_CONFIG);
+    sleep_ms(25);
+
+    // Write calibration data to the BNO055 sensor
+    for (int i = 0; i < CALIBRATION_DATA_SIZE; i++) {
+        bno055_write_register(0x55 + i, calibration_data[i]);
+    }
+
+    bno055_write_register(BNO055_OPR_MODE_ADDR, OPERATION_MODE_NDOF);
+    sleep_ms(20);
+}
+
+}  // namespace bno055_sensor

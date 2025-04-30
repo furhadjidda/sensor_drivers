@@ -159,7 +159,7 @@ typedef enum { POWER_MODE_NORMAL = 0X00, POWER_MODE_LOWPOWER = 0X01, POWER_MODE_
 /** Remap settings **/
 typedef enum {
     REMAP_CONFIG_P0 = 0x21,
-    REMAP_CONFIG_P1 = 0x24, // default
+    REMAP_CONFIG_P1 = 0x24,  // default
     REMAP_CONFIG_P2 = 0x24,
     REMAP_CONFIG_P3 = 0x21,
     REMAP_CONFIG_P4 = 0x24,
@@ -171,7 +171,7 @@ typedef enum {
 /** Remap Signs **/
 typedef enum {
     REMAP_SIGN_P0 = 0x04,
-    REMAP_SIGN_P1 = 0x00, // default
+    REMAP_SIGN_P1 = 0x00,  // default
     REMAP_SIGN_P2 = 0x06,
     REMAP_SIGN_P3 = 0x02,
     REMAP_SIGN_P4 = 0x03,
@@ -247,12 +247,15 @@ typedef enum {
 } bno055_opmode_t;
 
 typedef struct {
-    double w; // Quaternion W component
-    double x; // Quaternion X component
-    double y; // Quaternion Y component
-    double z; // Quaternion Z component
+    double w;  // Quaternion W component
+    double x;  // Quaternion X component
+    double y;  // Quaternion Y component
+    double z;  // Quaternion Z component
 } quaternion_data;
 
 using EulerData = uint8_t[6];
+
+#define CALIBRATION_DATA_SIZE 22
+using CalibrationData = uint8_t[CALIBRATION_DATA_SIZE];
 
 #endif
