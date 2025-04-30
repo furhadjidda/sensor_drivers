@@ -1,8 +1,30 @@
 #include "flash_manager.hpp"
 
 #include "hardware/flash.h"
-#define FLASH_TOTAL_SIZE (16 * 1024 * 1024)  // 16MB flash
-#define SAFE_FLASH_OFFSET (4 * 1024 * 1024)  // 4MB offset to stay safe
+// #define FLASH_TOTAL_SIZE (16 * 1024 * 1024)  // 16MB flash
+// #define SAFE_FLASH_OFFSET (4 * 1024 * 1024)  // 4MB offset to stay safe
+#define STR_HELPER(x) #x
+#define STR(x) STR_HELPER(x)
+#define JOIN_MESSAGE(name, value) name " = " STR(value) " bytes"
+
+#ifndef FLASH_TOTAL_SIZE
+#error "FLASH_TOTAL_SIZE is not defined! Define via -DFLASH_TOTAL_SIZE=<bytes>"
+#endif
+
+#ifndef SAFE_FLASH_OFFSET
+#error "SAFE_FLASH_OFFSET is not defined! Define via -DSAFE_FLASH_OFFSET=<bytes>"
+#endif
+
+// Optional: Emit compile-time message
+#if FLASH_TOTAL_SIZE < (4 * 1024 * 1024)
+#error "FLASH_TOTAL_SIZE is less than 4MB. Must be at least 4MB!"
+#else
+#pragma message(JOIN_MESSAGE("FLASH_TOTAL_SIZE", FLASH_TOTAL_SIZE))
+#pragma message(JOIN_MESSAGE("SAFE_FLASH_OFFSET", SAFE_FLASH_OFFSET))
+#endif
+
+#define STR_HELPER(x) #x
+#define STR(x) STR_HELPER(x)
 
 void FlashManager::write_data(const uint8_t *data, size_t size) {
     // Calculate CRC32 of the data

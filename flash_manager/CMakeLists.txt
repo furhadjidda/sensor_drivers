@@ -15,6 +15,24 @@ set(FLASH_MANAGER "${CMAKE_CURRENT_SOURCE_DIR}")
 # Building a library
 ###################################################################
 
+# Set default values if not provided
+set(FLASH_TOTAL_SIZE 16777216 CACHE STRING "Total flash size in bytes (default 16MB)")
+set(SAFE_FLASH_OFFSET 4194304 CACHE STRING "Safe flash offset in bytes (default 4MB)")
+
+# Add the definitions to the compiler
+add_compile_definitions(
+    FLASH_TOTAL_SIZE=${FLASH_TOTAL_SIZE}
+    SAFE_FLASH_OFFSET=${SAFE_FLASH_OFFSET}
+)
+
+# Check flash size and issue error if it's less than 4MB
+if(${FLASH_TOTAL_SIZE} LESS 4194304)
+    message(FATAL_ERROR "FLASH_TOTAL_SIZE is less than 4MB! Must be >= 4194304 bytes.")
+else()
+    message(STATUS "Using FLASH_TOTAL_SIZE = ${FLASH_TOTAL_SIZE} bytes")
+    message(STATUS "Using SAFE_FLASH_OFFSET = ${SAFE_FLASH_OFFSET} bytes")
+endif()
+
 add_library(flash_manager STATIC
     flash_manager.cpp
 )
