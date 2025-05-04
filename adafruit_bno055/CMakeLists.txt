@@ -32,3 +32,4 @@ target_link_libraries(bno055 PUBLIC
 )
 
 add_subdirectory("${BNO055}/example")
+add_subdirectory("${BNO055}/calibration")
