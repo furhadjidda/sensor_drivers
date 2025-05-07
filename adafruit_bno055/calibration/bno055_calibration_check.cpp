@@ -39,7 +39,6 @@ int main() {
     while (true) {
         // Check if 2 seconds have passed
         if (absolute_time_diff_us(last_status_time, get_absolute_time()) >= 2 * 1000 * 1000) {
-            bno055->get_system_status(&system, &seltest, &error);
             printf("system: %x self test %x error %x \n", system, seltest, error);
             last_status_time = get_absolute_time();
             int8_t temp = bno055->get_temp();
@@ -49,14 +48,15 @@ int main() {
                 bno055->get_calibration_data(calibration_data);
             }
         }
-
+        bno055->get_system_status(&system, &seltest, &error);
+        printf("system: %x self test %x error %x \n", system, seltest, error);
         // Getting IMU data
         double data[3] = {};
         bno055->get_vector(VECTOR_EULER, data);
         if (true == bno055->is_fully_calibrated()) {
             printf("system fully calibrated \n");
         }
-        sleep_ms(20);
+        sleep_ms(500);
     }
     return 0;
 }
