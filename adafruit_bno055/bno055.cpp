@@ -46,6 +46,10 @@ bool Bno055::initialization() {
     bno055_write_register(BNO055_PWR_MODE_ADDR, POWER_MODE_NORMAL);
     sleep_ms(30);
 
+    bno055_write_register(BNO055_PAGE_ID_ADDR, 0x00);
+    bno055_write_register(BNO055_SYS_TRIGGER_ADDR, 0x00);
+    sleep_ms(10);
+
     // Set the sensor to NDOF mode
     bno055_write_register(BNO055_OPR_MODE_ADDR, OPERATION_MODE_NDOF);
     sleep_ms(30);
@@ -117,8 +121,8 @@ void Bno055::get_quaternion(quaternion_data &quaternion_data) {
 
 void Bno055::get_system_status(uint8_t *system_status, uint8_t *self_test_result, uint8_t *system_error) {
     // Configure BNO055
-    bno055_write_register(BNO055_OPR_MODE_ADDR, OPERATION_MODE_CONFIG);
-    sleep_ms(100);
+    // bno055_write_register(BNO055_OPR_MODE_ADDR, OPERATION_MODE_CONFIG);
+    // sleep_ms(100);
 
     bno055_write_register(BNO055_PAGE_ID_ADDR, 0);
 
@@ -163,10 +167,8 @@ void Bno055::get_system_status(uint8_t *system_status, uint8_t *self_test_result
 
     if (system_error != 0) *system_error = bno055_read_register(BNO055_SYS_ERR_ADDR);
 
-    sleep_ms(200);
-
-    bno055_write_register(BNO055_OPR_MODE_ADDR, OPERATION_MODE_NDOF);
-    sleep_ms(100);
+    // bno055_write_register(BNO055_OPR_MODE_ADDR, OPERATION_MODE_NDOF);
+    // sleep_ms(100);
 }
 
 void Bno055::check_firmware_version() {
@@ -247,6 +249,14 @@ void Bno055::bno055_read_bytes(uint8_t reg, uint8_t *buffer, size_t length) {
     i2c_read_blocking(I2C_PORT, BNO055_ADDRESS_A, buffer, length, false);
 }
 
+void Bno055::bno055_write_bytes(uint8_t reg, const uint8_t *buffer, size_t length) {
+    uint8_t data[length + 1];
+    data[0] = reg;
+    for (size_t i = 0; i < length; i++) {
+        data[i + 1] = buffer[i];
+    }
+    i2c_write_blocking(I2C_PORT, BNO055_ADDRESS_A, data, length + 1, false);
+}
 void Bno055::get_calibration_data(CalibrationData &calibration_data) {
     bno055_write_register(BNO055_OPR_MODE_ADDR, OPERATION_MODE_CONFIG);
     sleep_ms(25);
@@ -258,17 +268,63 @@ void Bno055::get_calibration_data(CalibrationData &calibration_data) {
 }
 
 void Bno055::set_calibration_data(const CalibrationData &calibration_data) {
+    if (is_valid_calibration_data(calibration_data, CALIBRATION_DATA_SIZE) == false) {
+        printf("❌ Invalid calibration data!\n");
+        return;
+    }
     // Write the calibration data to the BNO055 sensor
     bno055_write_register(BNO055_OPR_MODE_ADDR, OPERATION_MODE_CONFIG);
     sleep_ms(25);
 
-    // Write calibration data to the BNO055 sensor
-    for (int i = 0; i < CALIBRATION_DATA_SIZE; i++) {
-        bno055_write_register(0x55 + i, calibration_data[i]);
-    }
+    bno055_write_bytes(ACCEL_OFFSET_X_LSB_ADDR, calibration_data, CALIBRATION_DATA_SIZE);
 
     bno055_write_register(BNO055_OPR_MODE_ADDR, OPERATION_MODE_NDOF);
-    sleep_ms(20);
+    sleep_ms(25);
+}
+
+bool Bno055::is_valid_calibration_data(const uint8_t *cal, size_t len) {
+    if (len != 22) {
+        printf("❌ Calibration data length incorrect. Expected 22, got %zu\n", len);
+        return false;
+    }
+
+    int16_t acc_offset_x = (int16_t)(cal[0] | (cal[1] << 8));
+    int16_t acc_offset_y = (int16_t)(cal[2] | (cal[3] << 8));
+    int16_t acc_offset_z = (int16_t)(cal[4] | (cal[5] << 8));
+
+    int16_t mag_offset_x = (int16_t)(cal[6] | (cal[7] << 8));
+    int16_t mag_offset_y = (int16_t)(cal[8] | (cal[9] << 8));
+    int16_t mag_offset_z = (int16_t)(cal[10] | (cal[11] << 8));
+
+    int16_t gyro_offset_x = (int16_t)(cal[12] | (cal[13] << 8));
+    int16_t gyro_offset_y = (int16_t)(cal[14] | (cal[15] << 8));
+    int16_t gyro_offset_z = (int16_t)(cal[16] | (cal[17] << 8));
+
+    uint16_t acc_radius = (uint16_t)(cal[18] | (cal[19] << 8));
+    uint16_t mag_radius = (uint16_t)(cal[20] | (cal[21] << 8));
+
+    printf("Accel offset: X=%d Y=%d Z=%d\n", acc_offset_x, acc_offset_y, acc_offset_z);
+    printf("Mag offset  : X=%d Y=%d Z=%d\n", mag_offset_x, mag_offset_y, mag_offset_z);
+    printf("Gyro offset : X=%d Y=%d Z=%d\n", gyro_offset_x, gyro_offset_y, gyro_offset_z);
+    printf("Radius      : Acc=%u Mag=%u\n", acc_radius, mag_radius);
+
+    // Basic sanity check: large offsets might indicate bad data
+    if (abs(acc_offset_x) > 2000 || abs(acc_offset_y) > 2000 || abs(acc_offset_z) > 2000) {
+        printf("❌ Accel offsets too large!\n");
+        return false;
+    }
+
+    if (abs(mag_offset_x) > 2000 || abs(mag_offset_y) > 2000 || abs(mag_offset_z) > 2000) {
+        printf("❌ Mag offsets too large!\n");
+        return false;
+    }
+
+    if (abs(gyro_offset_x) > 500 || abs(gyro_offset_y) > 500 || abs(gyro_offset_z) > 500) {
+        printf("❌ Gyro offsets too large!\n");
+        return false;
+    }
+
+    return true;
 }
 
 }  // namespace bno055_sensor

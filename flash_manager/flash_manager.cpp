@@ -51,26 +51,27 @@ void FlashManager::write_data(const uint8_t *data, size_t size) {
 }
 
 void FlashManager::read_data(uint8_t *data, size_t size) {
-    // Read back the data from flash
     const uint8_t *flash_memory = (const uint8_t *)(XIP_BASE + SAFE_FLASH_OFFSET);
-    const uint32_t *read_data = reinterpret_cast<const uint32_t *>(flash_memory);
-    uint32_t read_crc;
-    memcpy(&read_crc, flash_memory + size, sizeof(read_crc));
 
+    // Print raw flash contents
     printf("Data read from flash:\n");
-    for (size_t i = 0; i < size / sizeof(uint32_t); ++i) {
-        printf("%u ", read_data[i]);
+    for (size_t i = 0; i < size; ++i) {
+        printf("%02x ", flash_memory[i]);
     }
     printf("\n");
 
-    // Verify CRC
-    uint32_t crc_read = compute_crc32(read_data, size);
+    // Extract and validate CRC
+    uint32_t read_crc;
+    memcpy(&read_crc, flash_memory + size, sizeof(read_crc));
+
+    uint32_t crc_read = compute_crc32(flash_memory, size);
     printf("CRC32 read: 0x%08x\n", crc_read);
 
     if (crc_read == read_crc) {
+        memcpy(data, flash_memory, size);
         printf("✅ CRC check PASSED. Data integrity OK.\n");
     } else {
-        printf("❌ CRC check FAILED. Data corrupted!\n");
+        printf("❌ CRC check FAILED. Data corrupted! NOT loading data.\n");
     }
 }
 

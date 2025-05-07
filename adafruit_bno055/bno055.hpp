@@ -22,12 +22,14 @@ class Bno055 {
     void get_quaternion(quaternion_data &quaternion_data);
     void get_calibration_data(CalibrationData &calibration_data);
     void set_calibration_data(const CalibrationData &calibration_data);
+    void bno055_write_bytes(uint8_t reg, const uint8_t *buffer, size_t length);
 
    private:
     void bno055_write_register(uint8_t reg, uint8_t value);
     uint8_t bno055_read_register(uint8_t reg);
     void bno055_read_bytes(uint8_t reg, uint8_t *buffer, size_t length);
     bno055_opmode_t mMode;
+    bool is_valid_calibration_data(const uint8_t *cal, size_t len);
 };
 }  // namespace bno055_sensor
 #endif
